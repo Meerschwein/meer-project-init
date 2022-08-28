@@ -1,0 +1,18 @@
+[formatter.nix]
+command = "alejandra"
+includes = ["*.nix"]
+
+[formatter.shell]
+command = "shfmt"
+options = [
+  "-i",
+  "2",   # indent 2
+  "-s",  # simplify the code
+  "-w",  # write back to the file
+]
+includes = ["*.sh"]
+
+[formatter.golang]
+command = "gofumpt"
+options = ["-w"]
+includes = ["*.go"]
