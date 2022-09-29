@@ -18,7 +18,7 @@
     };
   in {
     devShell.${system} = pkgs.mkShell {
-      packages = with pkgs.unstable; [
+      packages = with pkgs; [
         go_1_18
         gopls # language server
         delve # debugger

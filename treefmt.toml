@@ -4,15 +4,19 @@ includes = ["*.nix"]
 
 [formatter.shell]
 command = "shfmt"
+includes = ["*.sh"]
 options = [
   "-i",
   "2",   # indent 2
   "-s",  # simplify the code
   "-w",  # write back to the file
 ]
-includes = ["*.sh"]
 
 [formatter.golang]
 command = "gofumpt"
-options = ["-w"]
 includes = ["*.go"]
+excludes = ["pkg/slice_operations/*"] # doesnt work for some reason
+options = [
+  "-w",     # write to file
+  "--extra" # more rules
+]
