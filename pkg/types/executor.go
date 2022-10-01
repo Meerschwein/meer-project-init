@@ -15,12 +15,12 @@ type Executor interface {
 	Create_dir(path string)
 }
 
-func Get_executor(cli_args CliArguments) Executor {
-	if cli_args.Dry_run {
+func get_executor(config Config) Executor {
+	if config.Dry_run {
 		return LogExecutor{}
 	} else {
 		return ActualExecutor{
-			Execution_directory: cli_args.Init_directory_path,
+			Execution_directory: config.project_directory(),
 		}
 	}
 }
@@ -81,8 +81,8 @@ func (ActualExecutor) Create_dir(path string) {
 	os.MkdirAll(path, os.ModePerm)
 }
 
-func Execute_profile(exec Executor, config Config, profile Profile) error {
-	exec.Create_dir(config.Cli_arguments.Init_directory_path)
+func execute_profile(exec Executor, config Config, profile Profile) error {
+	exec.Create_dir(config.project_directory())
 
 	for _, command := range profile.Commands_before {
 		err := exec.Execute_command(command)
@@ -92,7 +92,7 @@ func Execute_profile(exec Executor, config Config, profile Profile) error {
 	}
 
 	for _, using := range profile.Using {
-		err := Execute_profile(exec, config, config.Get_profile(using))
+		err := execute_profile(exec, config, config.Get_profile(using))
 		if err != nil {
 			return err
 		}

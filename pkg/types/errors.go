@@ -9,18 +9,18 @@ type Errors struct {
 	errors []string
 }
 
-func (errs *Errors) Append(new_error string) {
+func (errs *Errors) append(new_error string) {
 	errs.errors = append(errs.errors, new_error)
 }
 
-func (errs *Errors) Appendf(format string, a ...interface{}) {
-	errs.errors = append(errs.errors, fmt.Sprintf(format, a...))
+func (errs *Errors) appendf(format string, a ...interface{}) {
+	errs.append(fmt.Sprintf(format, a...))
 }
 
 func (errs Errors) Error() string {
 	return strings.Join(errs.errors, "\n")
 }
 
-func (errs Errors) Len() int {
+func (errs Errors) len() int {
 	return len(errs.errors)
 }

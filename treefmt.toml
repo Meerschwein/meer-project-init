@@ -15,7 +15,6 @@ options = [
 [formatter.golang]
 command = "gofumpt"
 includes = ["*.go"]
-excludes = ["pkg/slice_operations/*"] # doesnt work for some reason
 options = [
   "-w",     # write to file
   "--extra" # more rules
