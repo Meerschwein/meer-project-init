@@ -47,7 +47,7 @@ func init() {
 		&dry_run,
 		"dry-run",
 		false,
-		"",
+		"Prints the actions that would be taken without actually taking them.",
 	)
 
 	getopt.Parse()
