@@ -16,7 +16,7 @@
       inherit system;
       overlays = [unstable-overlay];
     };
-  in {
+  in rec {
     devShell.${system} = pkgs.mkShell {
       packages = with pkgs; [
         go_1_18
@@ -30,5 +30,18 @@
         gofumpt
       ];
     };
+
+    packages.${system} = {
+      pinit = pkgs.callPackage ./nix/pinit.nix {};
+    };
+
+    apps.${system}.default = {
+      type = "app";
+      program = "${packages.${system}.pinit}/bin/pinit";
+    };
+
+    overlays.default = final: prev: packages.${system};
+
+    formatter.${system} = pkgs.treefmt;
   };
 }
