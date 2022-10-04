@@ -1,9 +1,9 @@
 package types
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -54,19 +54,28 @@ func (executor ActualExecutor) Execute_command(command string) error {
 }
 
 func (executor ActualExecutor) Copy_file(source, target string) error {
-	os.MkdirAll(path.Dir(target), os.ModePerm)
+	replacements := get_replacements(executor.config)
 
-	fout, err := os.Create(target)
+	var buffer bytes.Buffer
+	err := template.Must(template.New("").Parse(target)).Execute(&buffer, replacements)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	defer fout.Close()
+	actual_target := buffer.String()
 
-	err = template.Must(template.New("").ParseFiles(source)).ExecuteTemplate(fout, path.Base(source), get_replacements(executor.config))
+	os.MkdirAll(path.Dir(actual_target), os.ModePerm)
 
+	target_file, err := os.Create(actual_target)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	defer target_file.Close()
+
+	err = template.Must(template.New("").ParseFiles(source)).ExecuteTemplate(target_file, path.Base(source), replacements)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
