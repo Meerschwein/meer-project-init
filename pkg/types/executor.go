@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"io"
+	"html/template"
 	"log"
 	"os"
 	"os/exec"
@@ -19,9 +19,7 @@ func get_executor(config Config) Executor {
 	if config.Dry_run {
 		return LogExecutor{}
 	} else {
-		return ActualExecutor{
-			Execution_directory: config.project_directory(),
-		}
+		return ActualExecutor{config}
 	}
 }
 
@@ -42,12 +40,12 @@ func (LogExecutor) Create_dir(path string) {
 }
 
 type ActualExecutor struct {
-	Execution_directory string
+	config Config
 }
 
 func (executor ActualExecutor) Execute_command(command string) error {
 	cmd := exec.Command("bash", "-c", command)
-	cmd.Dir = executor.Execution_directory
+	cmd.Dir = executor.config.project_directory()
 	out, err := cmd.Output()
 	if string(out) != "" {
 		fmt.Println(string(out))
@@ -55,21 +53,16 @@ func (executor ActualExecutor) Execute_command(command string) error {
 	return err
 }
 
-func (ActualExecutor) Copy_file(source, target string) error {
-	fin, err := os.Open(source)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fin.Close()
-
+func (executor ActualExecutor) Copy_file(source, target string) error {
 	os.MkdirAll(path.Dir(target), os.ModePerm)
+
 	fout, err := os.Create(target)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer fout.Close()
 
-	_, err = io.Copy(fout, fin)
+	err = template.Must(template.New("").ParseFiles(source)).ExecuteTemplate(fout, path.Base(source), get_replacements(executor.config))
 
 	if err != nil {
 		log.Fatal(err)
