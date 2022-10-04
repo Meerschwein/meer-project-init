@@ -24,14 +24,14 @@ func init() {
 	flag.StringVar(
 		&path_to_config_file,
 		"config-file",
-		xdg.ConfigHome+"/meer-project-init/config.toml",
+		xdg.ConfigHome+"/pinit/config.toml",
 		"Path to the config file.",
 	)
 
 	flag.StringVar(
 		&path_to_base_directory,
 		"base-directory",
-		xdg.ConfigHome+"/meer-project-init",
+		xdg.ConfigHome+"/pinit",
 		"Path to the directory from where the files will be copied.",
 	)
 
