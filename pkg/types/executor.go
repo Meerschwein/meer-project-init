@@ -1,7 +1,6 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"os"
@@ -44,24 +43,29 @@ type ActualExecutor struct {
 }
 
 func (executor ActualExecutor) Execute_command(command string) error {
-	cmd := exec.Command("bash", "-c", command)
+	replacement := get_replacements(executor.config)
+	actual_command, err := replacement.in_string(command)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("bash", "-c", actual_command)
 	cmd.Dir = executor.config.project_directory()
 	out, err := cmd.Output()
 	if string(out) != "" {
 		fmt.Println(string(out))
 	}
+
 	return err
 }
 
 func (executor ActualExecutor) Copy_file(source, target string) error {
-	replacements := get_replacements(executor.config)
+	replacement := get_replacements(executor.config)
 
-	var buffer bytes.Buffer
-	err := template.Must(template.New("").Parse(target)).Execute(&buffer, replacements)
+	actual_target, err := replacement.in_string(target)
 	if err != nil {
 		return err
 	}
-	actual_target := buffer.String()
 
 	os.MkdirAll(path.Dir(actual_target), os.ModePerm)
 
@@ -71,12 +75,9 @@ func (executor ActualExecutor) Copy_file(source, target string) error {
 	}
 	defer target_file.Close()
 
-	err = template.Must(template.New("").ParseFiles(source)).ExecuteTemplate(target_file, path.Base(source), replacements)
-	if err != nil {
-		return err
-	}
+	err = template.Must(template.New("").ParseFiles(source)).ExecuteTemplate(target_file, path.Base(source), replacement)
 
-	return nil
+	return err
 }
 
 func (ActualExecutor) Create_dir(path string) {
@@ -99,6 +100,7 @@ func execute_profile(exec Executor, config Config, profile Profile) error {
 			return err
 		}
 	}
+	
 
 	for _, to_copy := range profile.Paths {
 		for _, target := range to_copy.Targets {
